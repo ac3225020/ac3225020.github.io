@@ -3,15 +3,15 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: 胡伟煌 
+title: tmaczhang blog
 subtitle: 个人博客
-author: 胡伟煌
+author: tmaczhang
 language:
 timezone:
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
-url: http://www.huweihuang.com/       # Note: don't forget to modify the CNAME file to your url
+url: https://ac3225020.github.io/
 root: /
 #permalink: :year/:month/:day/:title/
 permalink: :category/:title/
@@ -21,7 +21,7 @@ permalink_defaults:
 #Custom Setting Start
 
 # Site settings
-SEOTitle: 胡伟煌 | Blog
+SEOTitle: tmaczhang blog
 email: e-mail_address
 description: ""
 keyword: ""
@@ -36,7 +36,7 @@ signature-img: img/signature/BeanTechSign-white.png
 # RSS: false
 # weibo_username:     Demonbaneen
 # zhihu_username:     Demonbane
-github_username:    huweihuang
+github_username:    ac3225020
 # twitter_username:   Demonbane_x
 # facebook_username:  xxx
 # linkedin_username:  xxx
@@ -56,23 +56,26 @@ anchorjs: true                          # if you want to customize anchor. check
 
 # Analytics settings
 #Baidu Analytics
-ba_track_id: xxx
+# ba_track_id: your-baidu-id
 # Google Analytics
-ga_track_id: 'UA-XXXXXXXX-X'          # Format: UA-xxxxxx-xx
-ga_domain: yoursite
+# ga_track_id: 'UA-XXXXXXXX-X'          # Format: UA-xxxxxx-xx
+# ga_domain: yoursite
 
 
 # Sidebar settings
 sidebar: true                       # whether or not using Sidebar.
 sidebar-about-description: "Stay hungry,Stay foolish"
 sidebar-avatar: /img/avatar/ironman.png      # use absolute URL, seeing it's used in both `/` and `/about/`
-widgets:
-- featured-tags
-- short-about
-- recent-posts
-- friends-blog
-- archive
-#- category
+
+# 主题设置（Hexo 5+ 需要通过 theme_config 传给主题）
+theme_config:
+  widgets:
+    - featured-tags
+    - short-about
+    - recent-posts
+    #- friends-blog
+    - archive
+    #- category
 
 # widget behavior
 ## Archive
@@ -87,20 +90,8 @@ featured-condition-size: 0              # A tag will be featured if the size of 
 
 
 ## Friends
-friends: [
-    {
-        title: "CSDN Blog 胡伟煌",
-        href: "http://blog.csdn.net/huwh_"
-    },
-    {
-        title: "DockOne 胡伟煌",
-        href: "http://dockone.io/people/胡伟煌"
-    },
-    {
-        title: "阿里云栖社区 胡伟煌",
-        href: "https://yq.aliyun.com/u/huweihuang"
-    }
-]
+# 想加友链时取消 sidebar 里的 friends-blog 注释，并在这里填
+friends: []
 
 
 #Custom Setting End
@@ -121,17 +112,22 @@ skip_render:
 new_post_name: :title.md # File name of new posts
 default_layout: post
 titlecase: false # Transform title into titlecase
-external_link: true # Open external links in new tab
+external_link:
+  enable: true # Open external links in new tab
+  field: site
+  exclude: ''
 filename_case: 0
 render_drafts: false
 post_asset_folder: true
 relative_link: false
 future: true
+syntax_highlighter: highlight.js
 highlight:
-  enable: true
   line_number: true
   auto_detect: false
-  tab_replace:
+  tab_replace: ''
+  wrap: true
+  hljs: false
 
 # Category & Tag
 default_category: article
@@ -213,10 +209,11 @@ alipay: alipay_url
 # Reference: https://github.com/overtrue/share.js
 share: true
 
-# Reference: https://github.com/YuyingWu/hexo-generator-index-plus
-index_generator_plus:
+# 首页分页
+index_generator:
   path: ''
   per_page: 10
+  order_by: -date
 
 ## Themes: https://hexo.io/themes/
 theme: huweihuang
@@ -231,6 +228,6 @@ sitemap:
 # branch: master
 deploy:
   type: git
-  repository: https://github.com/huweihuang/hexo-theme-huweihuang
+  repository: git@github.com:ac3225020/ac3225020.github.io.git
   branch: gh-pages
-  message: Update CNAME
+  message: Site updated

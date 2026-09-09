@@ -24,6 +24,22 @@
 <img src="<%= config['url'] %><%= config['root'] %>img/icon_wechat.png" width="0" height="0" />
 <!-- Migrate from head to bottom, no longer block render and still work -->
 
+	<!-- MathJax（LaTeX 公式）：正文里出现公式分隔符时才加载，也可在文章 front-matter 写 mathjax: true 强制加载 -->
+	<% if (page.mathjax || (page.content && /\$|\\\(/.test(page.content))) { %>
+	<script>
+	  window.MathJax = {
+	    tex: {
+	      inlineMath: [['$', '$'], ['\\(', '\\)']],
+	      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+	    },
+	    options: {
+	      skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+	    }
+	  };
+	</script>
+	<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+	<% } %>
+
 </body>
 
 </html>
