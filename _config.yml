@@ -3,7 +3,7 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: tmaczhang blog
+title: tmaczjm
 subtitle: 个人博客
 author: tmaczhang
 language:
@@ -21,7 +21,7 @@ permalink_defaults:
 #Custom Setting Start
 
 # Site settings
-SEOTitle: tmaczhang blog
+SEOTitle: tmaczjm
 email: e-mail_address
 description: ""
 keyword: ""
