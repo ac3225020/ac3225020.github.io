@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/img/ironman-draw.png">
+    <!-- Place this tag in your head or just before your close body tag. -->
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <title>
+        
+          DSv4 前向传播 - tmaczjm
+        
+    </title>
+
+    <link rel="canonical" href="https://ac3225020.github.io/article/DSv4-forward-pass/">
+
+    <!-- Bootstrap Core CSS -->
+    
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+
+
+    <!-- Custom CSS --> 
+    
+<link rel="stylesheet" href="/css/beantech.min.css">
+
+
+    
+<link rel="stylesheet" href="/css/donate.css">
+
+    
+    <!-- Pygments Highlight CSS -->
+    
+<link rel="stylesheet" href="/css/highlight.css">
+
+
+    
+<link rel="stylesheet" href="/css/widget.css">
+
+
+    
+<link rel="stylesheet" href="/css/rocket.css">
+
+
+    
+<link rel="stylesheet" href="/css/signature.css">
+
+
+    
+<link rel="stylesheet" href="/css/toc.css">
+
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+	<!-- Modified by Yu-Hsuan Yen -->
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        
+            background-image: url('/img/article_header/article_bg.jpg')
+            /*post*/
+        
+    }
+    
+</style>
+
+<header class="intro-header" >
+    <!-- Signature -->
+    <div id="signature">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                
+                    <div class="post-heading">
+                        <div class="tags">
+                            
+                        </div>
+                        <h1>DSv4 前向传播</h1>
+                        <h2 class="subheading"></h2>
+                        <span class="meta">
+                            Posted by tmaczjm on
+                            2026-09-09
+                        </span>
+                    </div>
+                
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+	
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">tmaczjm</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archive/">Archives</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    <!-- Modify by Yu-Hsuan Yen -->
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+            <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <h1 id="deepseek-v4-前向传播全流程推理视角">DeepSeek-V4 前向传播全流程（推理视角）</h1>
+<blockquote>
+<p>基于 <code>model.py</code> 的推理代码，从用户输入到下一个 token 的完整过程。<br>
+每个步骤：<strong>先讲最简实现 → 再讲 DSV4 的实际优化 → 标明输入/输出矩阵形状</strong>。</p>
+<p>全局超参数（<code>ModelArgs</code> 默认值）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">dim = 4096          # 隐藏维度（全程的主干维度）</span><br><span class="line">vocab_size = 129280 # 词表大小</span><br><span class="line">n_layers = 7        # Block 层数</span><br><span class="line">n_heads = 64        # 注意力头数</span><br><span class="line">head_dim = 512      # 每头维度</span><br><span class="line">q_lora_rank = 1024  # Q 低秩压缩维度</span><br><span class="line">rope_head_dim = 64  # RoPE 位置编码维度</span><br><span class="line">n_routed_experts = 8, n_activated_experts = 2  # MoE：8 选 2</span><br><span class="line">window_size = 128   # 滑动窗口大小</span><br></pre></td></tr></table></figure>
+</blockquote>
+<hr>
+<h2 id="0-全局认知两个角色">0. 全局认知：两个角色</h2>
+<p>整个推理过程只有两种东西：</p>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>内容</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>权重（固定）</strong></td>
+<td>嵌入表 E、每层 wq/wkv/wo、专家矩阵、输出矩阵 W</td>
+<td>训练好后冻结，推理时只读；几十 GB，每步都要从显存读一遍</td>
+</tr>
+<tr>
+<td><strong>激活（现算）</strong></td>
+<td>x、h、q、kv、logits</td>
+<td>根据输入现场计算，用完即弃（K/V 例外，会缓存）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>推理 = 固定的知识 × 变化的输入 → 当场的预测。</strong></p>
+<hr>
+<h2 id="1-总体执行框架">1. 总体执行框架</h2>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">用户文本</span><br><span class="line">   │</span><br><span class="line">   ▼ ① 分词 + 嵌入查表</span><br><span class="line">ids → x [S, 4096]</span><br><span class="line">   │</span><br><span class="line">   ▼ ② ×7 层 Block 循环（每层：Norm → Attention → 残差 → Norm → MoE → 残差）</span><br><span class="line">h [S, 4096]     （形状守恒：进多少维出多少维）</span><br><span class="line">   │</span><br><span class="line">   ▼ ③ 输出层：取最后一行 @ W.T</span><br><span class="line">logits [129280]</span><br><span class="line">   │</span><br><span class="line">   ▼ ④ 温度 + top-k 采样</span><br><span class="line">下一个 token → 拼回输入 → 循环</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="2-步骤一分词与嵌入查表">2. 步骤一：分词与嵌入查表</h2>
+<h3 id="最简实现">最简实现</h3>
+<p>分词器把文本切成 token id 序列；嵌入表 E 是一个 <code>[词表, dim]</code> 的矩阵，<strong>按行号查表</strong>（不是矩阵乘），每个 id 换一行向量。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&quot;我爱吃&quot; → ids [3] → 查 E → x [3, 4096]</span><br></pre></td></tr></table></figure>
+<ul>
+<li>输入：<code>ids [S]</code>（整数序列）</li>
+<li>输出：<code>x [S, 4096]</code>（每行一个 token 的向量）</li>
+</ul>
+<h3 id="dsv4-的优化">DSV4 的优化</h3>
+<p><code>ParallelEmbedding</code>（L83）：多卡时把 E 按词表维度切分到不同显卡，各自查自己那一段再 <code>all_reduce</code> 合并。单卡时就是普通查表，无差别。</p>
+<h3 id="关键点">关键点</h3>
+<p>嵌入向量只是 token 的&quot;原材料&quot;。<strong>decode 时历史 token 永不重新查表</strong>——它们的贡献已经以 K/V 形式存进 KV cache 了。</p>
+<hr>
+<h2 id="3-步骤二block-循环7-层">3. 步骤二：Block 循环（×7 层）</h2>
+<p>每层 Block（L647）结构：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">x [S, 4096]</span><br><span class="line">  ├─ RMSNorm → Attention → +残差</span><br><span class="line">  └─ RMSNorm → MoE       → +残差</span><br><span class="line">输出 [S, 4096]     ← 形状守恒，才能无限堆叠</span><br></pre></td></tr></table></figure>
+<h3 id="30-rmsnorm归一化">3.0 RMSNorm（归一化）</h3>
+<p><strong>最简实现</strong>：把每个 token 的向量缩放为单位长度附近，再乘可学习的增益：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">x / sqrt(mean(x²) + ε) × weight</span><br></pre></td></tr></table></figure>
+<ul>
+<li>输入：<code>[S, 4096]</code> → 输出：<code>[S, 4096]</code>（形状不变）</li>
+<li>作用：稳定数值，防止层数堆叠后数值爆炸/消失。不改变语义方向的理解即可。</li>
+</ul>
+<hr>
+<h3 id="31-attention核心">3.1 Attention（核心）</h3>
+<p>这是唯一发生 <strong>token 之间信息交换</strong> 的地方。其余所有操作都是逐 token 独立的。</p>
+<h4 id="311-qkv-投影">3.1.1 Q/KV 投影</h4>
+<p><strong>最简实现</strong>（标准 Transformer）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">q = x @ Wq.T    # [S,4096] @ [4096, 64×512] → [S, 32768] → 拆头 [S, 64, 512]</span><br><span class="line">k = x @ Wk.T    # 同形状</span><br><span class="line">v = x @ Wv.T    # 同形状</span><br></pre></td></tr></table></figure>
+<p>含义：每个 token 生成三个角色——Q（我在找什么）、K（我是什么的标签）、V（我的实际内容）。</p>
+<p><strong>DSV4 的优化（MLA，Multi-head Latent Attention）</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">① Q 低秩分解（L496-497）：一个大矩阵拆成两个小矩阵，参数省 72%</span><br><span class="line">   x [S,4096] @ wq_a.T [4096→1024] → qr [S,1024]</span><br><span class="line">   qr @ wq_b.T [1024→32768] → q [S, 64, 512]（拆出 64 个头）</span><br><span class="line"></span><br><span class="line">② KV 合一（L502）：K 和 V 是同一个向量，一次算出，不分头！</span><br><span class="line">   x [S,4096] @ wkv.T [4096→512] → kv [S, 512]</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>MLA 核心思想</strong>：64 个头的多样性全部由 Q 侧承担（每个头的 q 不同，查同一份 kv 自然得到不同结果）；KV 只存一份共享的 512 维&quot;信息浓汤&quot;，既是 K 也是 V。<br>
+<strong>收益</strong>：KV cache 每 token 只存 512 个数（标准 MHA 要存 64×512×2=65536 个），<strong>省 128 倍显存</strong>。</p>
+</blockquote>
+<h4 id="312-rope-位置编码l499-l504">3.1.2 RoPE 位置编码（L499、L504）</h4>
+<p><strong>最简实现</strong>：纯注意力对顺序无感知，必须注入位置信息。RoPE 把 q/kv 的最后 64 维两两一组做旋转，旋转角度随位置变化，使得 <code>q_t · kv_s</code> 自动携带相对距离 (t−s) 的信息。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">q[..., -64:], kv[..., -64:] 按位置旋转（形状不变）</span><br></pre></td></tr></table></figure>
+<p><strong>DSV4 细节</strong>：只旋转最后 64 维（<code>rope_head_dim=64</code>），前 448 维保持内容纯净；且输出后要&quot;反旋转&quot;（L534），因为 kv 兼作 V，旋转会被加权求和带进输出。</p>
+<h4 id="313-注意力核心计算">3.1.3 注意力核心计算</h4>
+<p><strong>最简实现</strong>（三步）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">scores  = q · kvᵀ × (1/√512)      # 和历史每个 token 算相似度（点积）</span><br><span class="line">weights = softmax(scores)          # 归一化成权重（每行和为 1）</span><br><span class="line">o       = weights · kv             # 按权重加权融合历史信息</span><br></pre></td></tr></table></figure>
+<ul>
+<li>输入：<code>q [S, 64, 512]</code>，<code>kv [N, 512]</code></li>
+<li>输出：<code>o [S, 64, 512]</code>（列数跟随 V 的行维度）</li>
+</ul>
+<blockquote>
+<p>矩阵乘法的每个元素就是一次点积：<code>q·kvᵀ</code> = q 和 kv 每一行分别点积的打包写法。<br>
+<code>1/√512</code> 防止维度大时点积数值爆炸导致 softmax 饱和。<br>
+<strong>因果掩码</strong>：位置 t 只能看 ≤ t 的 token（不看未来），保证历史 token 的结果不随新 token 改变——这是 KV cache 能成立的前提。</p>
+</blockquote>
+<p><strong>多头为什么要分开算再 flatten？</strong> 因为 softmax 是非线性的：每个头需要独立的打分→独立的权重分布（不同视角关注不同内容）。若按 32768 维整体算，64 个视角的分数会被加总平均掉。flatten 只能发生在 softmax 之后。</p>
+<p><strong>DSV4 的优化</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">① 注意力 Sink（L456）：softmax 时多拼一个可学习的&quot;虚拟 token&quot;，</span><br><span class="line">   给&quot;其实不需要关注任何历史&quot;的情况一个泄洪口。</span><br><span class="line"></span><br><span class="line">② 滑动窗口 + 稀疏选择（L507-514）：不让 q 看全部历史——</span><br><span class="line">   最近 128 个 token 的原始 kv（滑动窗口）</span><br><span class="line">   + 更早历史的压缩 kv（Compressor 每 4/128 个 token 压成 1 个）</span><br><span class="line">   + Indexer 从压缩 kv 里 top-512 稀疏挑选</span><br><span class="line">   → topk_idxs 指定每个 q 实际参与计算的 kv 子集</span><br><span class="line">   → sparse_attn（L528/533）只对选中的 kv 算注意力</span><br><span class="line">   效果：注意力计算量有上限，不随序列无限增长。</span><br></pre></td></tr></table></figure>
+<h4 id="314-输出投影回到-4096">3.1.4 输出投影（回到 4096）</h4>
+<p><strong>最简实现</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">o [S, 64, 512] → flatten → [S, 32768] → @ Wo.T → [S, 4096]</span><br></pre></td></tr></table></figure>
+<p><strong>DSV4 的优化（L537-542）</strong>：Wo 也做低秩分解（wo_a 分 8 组压到 1024 → wo_b 合到 4096），同 wq_a/wq_b 的套路，省参数省带宽。</p>
+<ul>
+<li>输入：<code>[S, 64, 512]</code> → 输出：<code>[S, 4096]</code></li>
+<li>为什么必须回到 4096：残差相加要求维度一致，且下一层入口是 4096。</li>
+</ul>
+<h3 id="32-残差连接">3.2 残差连接</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">x = x + attention(x)     # 逐元素相加，形状不变 [S, 4096]</span><br></pre></td></tr></table></figure>
+<p>作用：信息高速公路——即使某层没学到东西，原始信息也能无损传到后面；梯度也能直接回传，深层网络才可训练。</p>
+<p><strong>DSV4 的优化（Hyper-Connections, L647-700）</strong>：残差不是 1 份而是 <code>hc_mult=4</code> 份隐藏状态并行流动，用可学习的 Sinkhorn 权重混合（<code>hc_pre</code> 压缩 4→1 进子层，<code>hc_post</code> 展开 1→4）。理解成&quot;4 车道残差&quot;即可，不改变主干形状语义。</p>
+<h3 id="33-moe前馈网络">3.3 MoE（前馈网络）</h3>
+<h4 id="最简实现稠密-ffn">最简实现（稠密 FFN）</h4>
+<p>每个 token 独立过一个两层 MLP：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">x [S,4096] → w1/w3 升维+激活（SwiGLU）→ w2 降回 → [S,4096]</span><br></pre></td></tr></table></figure>
+<p>没有头的概念，没有 flatten——处理的就是完整 4096 维向量。</p>
+<h4 id="dsv4-的优化moe混合专家">DSV4 的优化（MoE，混合专家）</h4>
+<p><strong>参数 ×8（容量大），每个 token 只激活 2 个专家（计算省）</strong>——稀疏激活。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">① 路由打分（Gate, L565）：</span><br><span class="line">   scores = x @ weight.T     # weight [8, 4096]，每个专家一行&quot;特征模板&quot;</span><br><span class="line">   [S,4096] @ [4096,8] → [S,8]   # 每个 token 和 8 个专家的匹配度</span><br><span class="line"></span><br><span class="line">② 选专家（L571-579）：</span><br><span class="line">   sqrt(softplus(scores)) 激活 → + bias（只做选择、不扭曲权重，用于负载均衡）</span><br><span class="line">   → top-2 选出 2 个专家</span><br><span class="line"></span><br><span class="line">③ 权重归一化（L580-583）：选中专家的原始分数归一化（和为 1）</span><br><span class="line"></span><br><span class="line">④ 加权混合（L635-643）：</span><br><span class="line">   y = w₁·专家A(x) + w₂·专家B(x) + 共享专家(x)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>输入：<code>[S, 4096]</code> → 输出：<code>[S, 4096]</code>（形状不变）</li>
+<li>注意力的&quot;分工&quot;是按维度切（64 个头各看一个切片）；MoE 的&quot;分工&quot;是按 token 分（不同 token 走不同专家），每个专家处理完整向量。</li>
+</ul>
+<hr>
+<h2 id="4-步骤三输出层与采样">4. 步骤三：输出层与采样</h2>
+<h3 id="最简实现">最简实现</h3>
+<p>7 层 Block 输出 <code>h [S, 4096]</code>。第 i 行含义：<strong>“读完前 i+1 个 token 后，对下一个词的预测依据”</strong>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">取最后一行 h[:, -1]  [1, 4096]      # 只有它看过全部上下文</span><br><span class="line">   │  @ W.T     W [129280, 4096]，每个词一行&quot;特征模板&quot;</span><br><span class="line">   ▼</span><br><span class="line">logits [1, 129280]                  # 和每个词做点积打分</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>W.T 的转置只是因为 PyTorch 存 <code>[out, in]</code>，数学要用 <code>[in, out]</code>；<code>h @ W.T</code> = 与词表每个词各做一次点积的打包。W 和嵌入表 E 形状相同、作用相反：E 是&quot;词→向量&quot;入口，W 是&quot;向量→词&quot;出口。</p>
+</blockquote>
+<p><strong>为什么只取最后一行？</strong> 第 i 行预测的是第 i+1 个词——推理时那些词已经在输入里了，只有最后一行预测的是未知未来。不是近似，是无用的行干脆不算。</p>
+<h3 id="采样l4-步变成真正的词">采样（L4 步变成真正的词）</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">logits / 温度T        # T小→差距放大→保守；T大→抹平→随机、有创意</span><br><span class="line">softmax               # 变成概率（和为 1）</span><br><span class="line">top-k 过滤            # 只留 k 个候选，其余清零，重新归一化</span><br><span class="line">按概率掷骰子           # argmax（贪心）是 T→0 的特例</span><br></pre></td></tr></table></figure>
+<p><strong>为什么要采样而不是永远选最高分？</strong> 避免输出死板、避免陷入重复循环；这也是同一问题问两次回答不同的原因。</p>
+<h3 id="dsv4-的优化">DSV4 的优化</h3>
+<p><code>ParallelHead</code>（L703）：W 按词表维度多卡切分 + <code>all_gather</code> 合并；权重存 fp32 保证打分精度。</p>
+<hr>
+<h2 id="5-prefill-vs-decode两种工作模式">5. Prefill vs Decode：两种工作模式</h2>
+<p>由于因果掩码，<strong>追加新 token 不改变历史 token 的任何计算结果</strong>——这是整个推理优化的基石。</p>
+<h3 id="prefill处理整段-promptstart_pos-0">Prefill（处理整段 prompt，<code>start_pos == 0</code>）</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">输入:  ids [S] → x [S, 4096]</span><br><span class="line">过程:  整段一次过完所有层（矩阵×矩阵，GPU 并行，只发生一次）</span><br><span class="line">       q [S, 64, 512]，kv [S, 512]</span><br><span class="line">       scores [S, 64, N]（带因果掩码，下三角）</span><br><span class="line">顺手:  把全部 token 的 kv 写入 KV cache</span><br><span class="line">输出:  只取最后一行 → logits → 采样出第一个新 token</span><br></pre></td></tr></table></figure>
+<h3 id="decode逐-token-生成start_pos-gt-0">Decode（逐 token 生成，<code>start_pos &gt; 0</code>）</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">输入:  新 token id [1] → 只查 1 行嵌入 → x [1, 4096]</span><br><span class="line">过程:  q 只有一行 [1, 64, 512]     ← 只有当前 token 需要&quot;提问&quot;</span><br><span class="line">       kv 取 cache 全部 [N, 512]   ← 历史是&quot;被查阅的资料&quot;，必须全在</span><br><span class="line">       新 token 的 kv 追加进 cache</span><br><span class="line">       历史信息在注意力这一步注入：weights · kv（每层一次，7 层注入 7 次）</span><br><span class="line">输出:  h_new [1, 4096] → logits [1, 129280] → 采样 → 下一个 token</span><br></pre></td></tr></table></figure>
+<p><strong>形状不对称的含义</strong>：提问者只有一个（q 一行），被提问的是全部历史（kv 整个 cache）。</p>
+<h3 id="为什么不觉得越生成越慢">为什么不觉得越生成越慢？</h3>
+<ol>
+<li>decode 注意力是 <code>q[1] × kv[N]</code>，O(N×d) 级别；真正的大头是每步读几十 GB 权重（与 N 无关），decode 是 memory-bound，注意力的增长被淹没。</li>
+<li>DSV4 的滑动窗口（128）+ 压缩 + 稀疏 topk（512）让实际参与计算的 kv 数量有上限。</li>
+<li>prefill 的 S×S 虽大，但并行矩阵乘且只发生一次。</li>
+</ol>
+<hr>
+<h2 id="6-形状速查表decode-单-token真实配置">6. 形状速查表（decode 单 token，真实配置）</h2>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>输入</th>
+<th>权重</th>
+<th>输出</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>嵌入查表</td>
+<td>id <code>[1]</code></td>
+<td>E <code>[129280, 4096]</code></td>
+<td>x <code>[1, 4096]</code></td>
+</tr>
+<tr>
+<td>Q 投影</td>
+<td>x <code>[1, 4096]</code></td>
+<td>wq_a <code>[1024, 4096]</code> → wq_b <code>[32768, 1024]</code></td>
+<td>q <code>[1, 64, 512]</code></td>
+</tr>
+<tr>
+<td>KV 投影</td>
+<td>x <code>[1, 4096]</code></td>
+<td>wkv <code>[512, 4096]</code></td>
+<td>kv <code>[1, 512]</code>（入 cache）</td>
+</tr>
+<tr>
+<td>注意力</td>
+<td>q <code>[1, 64, 512]</code>，cache <code>[N, 512]</code></td>
+<td>—</td>
+<td>o <code>[1, 64, 512]</code></td>
+</tr>
+<tr>
+<td>输出投影</td>
+<td>flatten <code>[1, 32768]</code></td>
+<td>wo_a/wo_b</td>
+<td><code>[1, 4096]</code></td>
+</tr>
+<tr>
+<td>MoE</td>
+<td><code>[1, 4096]</code></td>
+<td>Gate <code>[8, 4096]</code> + 专家 w1/w2/w3</td>
+<td><code>[1, 4096]</code></td>
+</tr>
+<tr>
+<td>输出层</td>
+<td>h_new <code>[1, 4096]</code></td>
+<td>W <code>[129280, 4096]</code></td>
+<td>logits <code>[1, 129280]</code></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="7-decode-逐矩阵追踪完整版">7. Decode 逐矩阵追踪（完整版）</h2>
+<p>以 decode 为例，一个 token id 从进来到出下一个 token，每一步矩阵形状的完整变化。<br>
+（省略 batch 维；N = 历史 token 数，M = topk 实际选中的 kv 数）</p>
+<h3 id="第-0-步嵌入查表">第 0 步：嵌入查表</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入:  token id            [1]           （一个整数）</span><br><span class="line">操作:  E[id] 查表          E: [129280, 4096]</span><br><span class="line">输出:  x                   [1, 4096]</span><br></pre></td></tr></table></figure>
+<h3 id="每层-block-内部7-层结构相同">每层 Block 内部（×7 层，结构相同）</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">① Norm（形状不变）</span><br><span class="line">   x [1, 4096] → RMSNorm → [1, 4096]</span><br><span class="line"></span><br><span class="line">② Q 投影（两步低秩）</span><br><span class="line">   [1, 4096] @ wq_a.T    wq_a: [1024, 4096]   → qr [1, 1024]</span><br><span class="line">   q_norm 归一化（形状不变）                      → [1, 1024]</span><br><span class="line">   [1, 1024] @ wq_b.T    wq_b: [32768, 1024]  → [1, 32768]</span><br><span class="line">   unflatten(-1, (64, 512))                      → q [1, 64, 512]</span><br><span class="line">   RoPE 旋转最后 64 维（形状不变）                 → q [1, 64, 512]</span><br><span class="line"></span><br><span class="line">③ KV 投影（一次，K 兼 V）</span><br><span class="line">   [1, 4096] @ wkv.T     wkv: [512, 4096]     → kv_new [1, 512]</span><br><span class="line">   kv_norm + RoPE（形状不变）                    → [1, 512]</span><br><span class="line">   写入 cache 一个槽位: kv_cache[.., start_pos % win, ..] = kv_new</span><br><span class="line"></span><br><span class="line">④ 注意力（历史在此注入）</span><br><span class="line">   输入:  q        [1, 64, 512]    ← 只有当前 token 一行</span><br><span class="line">          kv_cache [N, 512]        ← 全部历史（窗口原始 + 压缩区）</span><br><span class="line">   sparse_attn 内部:</span><br><span class="line">     scores  = q · kv_selᵀ × 1/√512  → [1, 64, M]</span><br><span class="line">     weights = softmax(+attn_sink)   → [1, 64, M]   每行和为1</span><br><span class="line">     o       = weights · kv_sel      → [1, 64, 512]</span><br><span class="line">   反 RoPE（形状不变）→ o [1, 64, 512]</span><br><span class="line"></span><br><span class="line">⑤ 输出投影（64头汇合回 4096）</span><br><span class="line">   o [1, 64, 512] → 分 8 组</span><br><span class="line">   @ wo_a（每组 4096 → 1024 低秩）→ [1, 8, 1024] = [1, 8192]</span><br><span class="line">   flatten @ wo_b.T    wo_b: [4096, 8192] → [1, 4096]</span><br><span class="line"></span><br><span class="line">⑥ 残差汇合（Hyper-Connections）</span><br><span class="line">   attn 输出 [1, 4096] 与 4 份残差按学习权重混合 → [1, 4096]（语义上 x + attn(x)）</span><br><span class="line"></span><br><span class="line">⑦ MoE（逐 token 独立，无头）</span><br><span class="line">   路由: [1, 4096] @ gate_weight.T  gate_weight: [8, 4096] → scores [1, 8]</span><br><span class="line">         激活+bias → top-2 → 归一化权重 [1, 2]</span><br><span class="line">   每个被选专家:</span><br><span class="line">     [1, 4096] @ w1.T → silu → ┐</span><br><span class="line">     [1, 4096] @ w3.T ────────┤ 相乘 → [1, 4096] @ w2.T → [1, 4096]</span><br><span class="line">   汇合: y = w_a·专家A(x) + w_b·专家B(x) + 共享专家(x) → [1, 4096]</span><br><span class="line">   + 残差 → [1, 4096]  ← 本层输出，交给下一层</span><br></pre></td></tr></table></figure>
+<h3 id="输出层7-层走完后">输出层（7 层走完后）</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">h_new [1, 4096]  → 取最后一行（S=1 即它本身）</span><br><span class="line">@ W.T   W: [129280, 4096]  → logits [1, 129280]</span><br><span class="line">÷ 温度 → softmax → top-k → 采样 → 新 token id [1]</span><br></pre></td></tr></table></figure>
+<p>新 id 拼进上下文，<code>start_pos += 1</code>，回到第 0 步循环。</p>
+<h3 id="一图流">一图流</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">id[1]</span><br><span class="line"> → E查表 → [1,4096]</span><br><span class="line"> ┌────────────── ×7 层 ──────────────┐</span><br><span class="line"> │ → Norm       [1,4096]             │</span><br><span class="line"> │ → wq_a       [1,1024]             │</span><br><span class="line"> │ → wq_b+拆头  [1,64,512]           │</span><br><span class="line"> │ → wkv        [1,512] → 入cache    │</span><br><span class="line"> │ → attn(cache[N,512]) [1,64,512]   │</span><br><span class="line"> │ → wo_a/wo_b  [1,4096] +残差       │</span><br><span class="line"> │ → Norm       [1,4096]             │</span><br><span class="line"> │ → Gate       [1,8] → 选2专家      │</span><br><span class="line"> │ → 专家w1/w3/w2 [1,4096] +残差     │</span><br><span class="line"> └───────────────────────────────────┘</span><br><span class="line"> → [1,4096] → @W.T → [1,129280] → 采样 → 新id[1]</span><br></pre></td></tr></table></figure>
+<p><strong>贯穿规律</strong>：层内维度会膨胀/压缩（4096→1024→32768、→512、→8192），但每层的入口和出口永远回到 <code>[1, 4096]</code>（残差主干道）；唯一的&quot;对外查询&quot;是注意力对 <code>kv_cache [N, 512]</code> 的一次阅读。</p>
+<hr>
+<h2 id="8-一句话总览">8. 一句话总览</h2>
+<blockquote>
+<p>固定的权重，现场算的激活；token 向量在 7 层 Block 里反复经历&quot;注意力（和历史交换信息）+ MoE（独立加工信息）&quot;，每层进出都是 4096 维；最后取最后一行和词表矩阵点积打分，温度+top-k 采样出下一个词；prefill 一次算全段，decode 靠 KV cache 每步只算一行——这就是 DeepSeek-V4 的推理全貌。</p>
+</blockquote>
+
+                
+
+                <hr>
+                <!-- Pager -->
+                <ul class="pager">
+                    
+                    
+                        <li class="next">
+                            <a href="/article/Hello-World/" data-toggle="tooltip" data-placement="top" title="Hello World">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                <br>
+
+                <!--打赏-->
+                
+                <!--打赏-->
+
+                <br>
+                <!--分享-->
+                
+                    <div class="social-share"  data-wechat-qrcode-helper="" align="center"></div>
+                    <!--  css & js -->
+                    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/social-share.js/1.0.16/css/share.min.css">
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/social-share.js/1.0.16/js/social-share.min.js"></script>
+                
+                <!--分享-->
+                <br>                       
+                
+                <!-- require APlayer -->
+                
+
+                <!-- duoshuo Share start -->
+                
+                <!-- 多说 Share end-->
+
+                <!-- 多说评论框 start -->
+                
+                <!-- 多说评论框 end -->
+
+                <!-- disqus comment start -->
+                
+                <!-- disqus comment end -->
+
+                
+
+            </div>
+            
+            <!-- Tabe of Content -->
+            <!-- Table of Contents -->
+
+  
+    <style>
+      span.toc-nav-number{
+        display: none
+      }
+    </style>
+  
+    
+      <aside id="sidebar">
+        <div id="toc" class="toc-article">
+        <strong class="toc-title">Contents</strong>
+        
+          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#deepseek-v4-%E5%89%8D%E5%90%91%E4%BC%A0%E6%92%AD%E5%85%A8%E6%B5%81%E7%A8%8B%E6%8E%A8%E7%90%86%E8%A7%86%E8%A7%92"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">DeepSeek-V4 前向传播全流程（推理视角）</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#0-%E5%85%A8%E5%B1%80%E8%AE%A4%E7%9F%A5%E4%B8%A4%E4%B8%AA%E8%A7%92%E8%89%B2"><span class="toc-nav-number">1.1.</span> <span class="toc-nav-text">0. 全局认知：两个角色</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#1-%E6%80%BB%E4%BD%93%E6%89%A7%E8%A1%8C%E6%A1%86%E6%9E%B6"><span class="toc-nav-number">1.2.</span> <span class="toc-nav-text">1. 总体执行框架</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#2-%E6%AD%A5%E9%AA%A4%E4%B8%80%E5%88%86%E8%AF%8D%E4%B8%8E%E5%B5%8C%E5%85%A5%E6%9F%A5%E8%A1%A8"><span class="toc-nav-number">1.3.</span> <span class="toc-nav-text">2. 步骤一：分词与嵌入查表</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#%E6%9C%80%E7%AE%80%E5%AE%9E%E7%8E%B0"><span class="toc-nav-number">1.3.1.</span> <span class="toc-nav-text">最简实现</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#dsv4-%E7%9A%84%E4%BC%98%E5%8C%96"><span class="toc-nav-number">1.3.2.</span> <span class="toc-nav-text">DSV4 的优化</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#%E5%85%B3%E9%94%AE%E7%82%B9"><span class="toc-nav-number">1.3.3.</span> <span class="toc-nav-text">关键点</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#3-%E6%AD%A5%E9%AA%A4%E4%BA%8Cblock-%E5%BE%AA%E7%8E%AF7-%E5%B1%82"><span class="toc-nav-number">1.4.</span> <span class="toc-nav-text">3. 步骤二：Block 循环（×7 层）</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#30-rmsnorm%E5%BD%92%E4%B8%80%E5%8C%96"><span class="toc-nav-number">1.4.1.</span> <span class="toc-nav-text">3.0 RMSNorm（归一化）</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#31-attention%E6%A0%B8%E5%BF%83"><span class="toc-nav-number">1.4.2.</span> <span class="toc-nav-text">3.1 Attention（核心）</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#311-qkv-%E6%8A%95%E5%BD%B1"><span class="toc-nav-number">1.4.2.1.</span> <span class="toc-nav-text">3.1.1 Q&#x2F;KV 投影</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#312-rope-%E4%BD%8D%E7%BD%AE%E7%BC%96%E7%A0%81l499-l504"><span class="toc-nav-number">1.4.2.2.</span> <span class="toc-nav-text">3.1.2 RoPE 位置编码（L499、L504）</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#313-%E6%B3%A8%E6%84%8F%E5%8A%9B%E6%A0%B8%E5%BF%83%E8%AE%A1%E7%AE%97"><span class="toc-nav-number">1.4.2.3.</span> <span class="toc-nav-text">3.1.3 注意力核心计算</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#314-%E8%BE%93%E5%87%BA%E6%8A%95%E5%BD%B1%E5%9B%9E%E5%88%B0-4096"><span class="toc-nav-number">1.4.2.4.</span> <span class="toc-nav-text">3.1.4 输出投影（回到 4096）</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#32-%E6%AE%8B%E5%B7%AE%E8%BF%9E%E6%8E%A5"><span class="toc-nav-number">1.4.3.</span> <span class="toc-nav-text">3.2 残差连接</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#33-moe%E5%89%8D%E9%A6%88%E7%BD%91%E7%BB%9C"><span class="toc-nav-number">1.4.4.</span> <span class="toc-nav-text">3.3 MoE（前馈网络）</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#%E6%9C%80%E7%AE%80%E5%AE%9E%E7%8E%B0%E7%A8%A0%E5%AF%86-ffn"><span class="toc-nav-number">1.4.4.1.</span> <span class="toc-nav-text">最简实现（稠密 FFN）</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#dsv4-%E7%9A%84%E4%BC%98%E5%8C%96moe%E6%B7%B7%E5%90%88%E4%B8%93%E5%AE%B6"><span class="toc-nav-number">1.4.4.2.</span> <span class="toc-nav-text">DSV4 的优化（MoE，混合专家）</span></a></li></ol></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#4-%E6%AD%A5%E9%AA%A4%E4%B8%89%E8%BE%93%E5%87%BA%E5%B1%82%E4%B8%8E%E9%87%87%E6%A0%B7"><span class="toc-nav-number">1.5.</span> <span class="toc-nav-text">4. 步骤三：输出层与采样</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#%E6%9C%80%E7%AE%80%E5%AE%9E%E7%8E%B0"><span class="toc-nav-number">1.5.1.</span> <span class="toc-nav-text">最简实现</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#%E9%87%87%E6%A0%B7l4-%E6%AD%A5%E5%8F%98%E6%88%90%E7%9C%9F%E6%AD%A3%E7%9A%84%E8%AF%8D"><span class="toc-nav-number">1.5.2.</span> <span class="toc-nav-text">采样（L4 步变成真正的词）</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#dsv4-%E7%9A%84%E4%BC%98%E5%8C%96"><span class="toc-nav-number">1.5.3.</span> <span class="toc-nav-text">DSV4 的优化</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#5-prefill-vs-decode%E4%B8%A4%E7%A7%8D%E5%B7%A5%E4%BD%9C%E6%A8%A1%E5%BC%8F"><span class="toc-nav-number">1.6.</span> <span class="toc-nav-text">5. Prefill vs Decode：两种工作模式</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#prefill%E5%A4%84%E7%90%86%E6%95%B4%E6%AE%B5-promptstart_pos-0"><span class="toc-nav-number">1.6.1.</span> <span class="toc-nav-text">Prefill（处理整段 prompt，start_pos &#x3D;&#x3D; 0）</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#decode%E9%80%90-token-%E7%94%9F%E6%88%90start_pos-gt-0"><span class="toc-nav-number">1.6.2.</span> <span class="toc-nav-text">Decode（逐 token 生成，start_pos &gt; 0）</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%A7%89%E5%BE%97%E8%B6%8A%E7%94%9F%E6%88%90%E8%B6%8A%E6%85%A2"><span class="toc-nav-number">1.6.3.</span> <span class="toc-nav-text">为什么不觉得越生成越慢？</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#6-%E5%BD%A2%E7%8A%B6%E9%80%9F%E6%9F%A5%E8%A1%A8decode-%E5%8D%95-token%E7%9C%9F%E5%AE%9E%E9%85%8D%E7%BD%AE"><span class="toc-nav-number">1.7.</span> <span class="toc-nav-text">6. 形状速查表（decode 单 token，真实配置）</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#7-decode-%E9%80%90%E7%9F%A9%E9%98%B5%E8%BF%BD%E8%B8%AA%E5%AE%8C%E6%95%B4%E7%89%88"><span class="toc-nav-number">1.8.</span> <span class="toc-nav-text">7. Decode 逐矩阵追踪（完整版）</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#%E7%AC%AC-0-%E6%AD%A5%E5%B5%8C%E5%85%A5%E6%9F%A5%E8%A1%A8"><span class="toc-nav-number">1.8.1.</span> <span class="toc-nav-text">第 0 步：嵌入查表</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#%E6%AF%8F%E5%B1%82-block-%E5%86%85%E9%83%A87-%E5%B1%82%E7%BB%93%E6%9E%84%E7%9B%B8%E5%90%8C"><span class="toc-nav-number">1.8.2.</span> <span class="toc-nav-text">每层 Block 内部（×7 层，结构相同）</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#%E8%BE%93%E5%87%BA%E5%B1%827-%E5%B1%82%E8%B5%B0%E5%AE%8C%E5%90%8E"><span class="toc-nav-number">1.8.3.</span> <span class="toc-nav-text">输出层（7 层走完后）</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#%E4%B8%80%E5%9B%BE%E6%B5%81"><span class="toc-nav-number">1.8.4.</span> <span class="toc-nav-text">一图流</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#8-%E4%B8%80%E5%8F%A5%E8%AF%9D%E6%80%BB%E8%A7%88"><span class="toc-nav-number">1.9.</span> <span class="toc-nav-text">8. 一句话总览</span></a></li></ol></li></ol>
+        
+        </div>
+      </aside>
+    
+
+                
+            <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'hover',
+          placement: 'left',
+          icon: 'ℬ'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+<!-- chrome Firefox 中文锚点定位失效-->
+<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
+<!-- smooth scroll behavior polyfill  -->
+<script type="text/javascript" src="/js/smoothscroll.js"></script>
+<script>
+        $('#toc').on('click','a',function(a){
+            // var isChrome = window.navigator.userAgent.indexOf("Chrome") !== -1;
+            // console.log(window.navigator.userAgent,isChrome)
+                // if(isChrome) {
+                    // console.log(a.currentTarget.outerHTML);
+                    // console.log($(a.currentTarget).attr("href"));
+                    //跳转到指定锚点
+                    // document.getElementById(a.target.innerText.toLowerCase()).scrollIntoView(true);
+                    document.getElementById($(a.currentTarget).attr("href").replace("#","")).scrollIntoView({behavior: 'smooth' });
+                // }
+        })  
+</script>
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                
+
+                
+
+                
+
+                
+                    <li>
+                        <a target="_blank"  href="https://github.com/ac3225020">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; tmaczjm 2026 
+                    <br>
+                    Theme by <a target="_blank" rel="noopener" href="http://beantech.org">BeanTech</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    re-Ported by <a target="_blank" rel="noopener" href="http://www.huweihuang.com">胡伟煌</a> | 
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="91px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=huweihuang&repo=hexo-theme-huweihuang&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+
+<script src="/js/jquery.min.js"></script>
+
+
+<!-- Bootstrap Core JavaScript -->
+
+<script src="/js/bootstrap.min.js"></script>
+
+
+<!-- Custom Theme JavaScript -->
+
+<script src="/js/hux-blog.min.js"></script>
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://ac3225020.github.io/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+
+
+	<a id="rocket" href="#top" class=""></a>
+	<script type="text/javascript" src="/js/totop.js?v=1.0.0" async=""></script>
+    <script type="text/javascript" src="/js/toc.js?v=1.0.0" async=""></script>
+<!-- Image to hack wechat -->
+<img src="https://ac3225020.github.io/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+	<!-- MathJax（LaTeX 公式）：正文里出现公式分隔符时才加载，也可在文章 front-matter 写 mathjax: true 强制加载 -->
+	
+
+</body>
+
+</html>

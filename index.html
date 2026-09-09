@@ -150,13 +150,6 @@
 
                         
                         <li>
-                            <a href="/archive/">Archives</a>
-                        </li>
-                        
-                    
-
-                        
-                        <li>
                             <a href="/about/">About</a>
                         </li>
                         
@@ -165,6 +158,13 @@
                         
                         <li>
                             <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archive/">Archives</a>
                         </li>
                         
                     
@@ -224,6 +224,38 @@
             
                 <!-- Main Content -->
 
+
+<div class="post-preview">
+
+    <a href="/article/DSv4-forward-pass/">
+        <h2 class="post-title">
+                                 
+            DSv4 前向传播
+        </h2>
+        <h3 class="post-subtitle">
+            
+        </h3>
+        <div class="post-content-preview">
+            DeepSeek-V4 前向传播全流程（推理视角）
+
+基于 model.py 的推理代码，从用户输入到下一个 token 的完整过程。
+每个步骤：先讲最简实现 → 再讲 DSV4 的实际优化 → 标明输入/输出矩阵形状。
+全局超参数（ModelArgs 默认值）：
+123456789dim = 4096          # 隐藏维度（全程的主干维度）vocab_size = 129280 ......
+        </div>
+    </a>
+    
+        <p class="post-meta" style="margin: 10px 0;">
+            Posted by tmaczjm on
+            2026-09-09
+        </p>
+        <div class="tags">
+            
+        </div>
+    
+
+</div>
+<hr>
 
 <div class="post-preview">
 
@@ -353,6 +385,10 @@ $$
     <ul>
       
         <li>
+          <a href="/article/DSv4-forward-pass/">DSv4 前向传播</a>
+        </li>
+      
+        <li>
           <a href="/article/Hello-World/">Hello World</a>
         </li>
       
@@ -364,7 +400,7 @@ $$
         
     <h5>ARCHIVES</h5>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/09/">September 2026</a><span class="archive-list-count">1</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/09/">September 2026</a><span class="archive-list-count">2</span></li></ul>
     </div>
 
         <hr>
